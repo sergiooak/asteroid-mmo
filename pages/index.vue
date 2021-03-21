@@ -3,7 +3,7 @@
     <div class="flex flex-col justify-between w-full h-full py-6">
       <header class="mb-3">
         <div v-if="player">
-          <div class="flex">
+          <div class="flex flex-wrap">
             <button
           @click="jump()"
           class="px-6 py-3 ml-6 border border-white"
@@ -151,7 +151,7 @@ export default {
       if (this.player.angularVelocity > -0.1) {
         this.Body.setAngularVelocity(
           this.player,
-          this.player.angularVelocity - 0.005
+          this.player.angularVelocity - 0.05
         );
       }
     },
@@ -159,7 +159,7 @@ export default {
       if (this.player.angularVelocity < 0.1) {
         this.Body.setAngularVelocity(
           this.player,
-          this.player.angularVelocity + 0.005
+          this.player.angularVelocity + 0.05
         );
       }
     },
