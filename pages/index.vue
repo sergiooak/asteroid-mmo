@@ -1,60 +1,27 @@
 <template>
-  <div class="container h-screen mx-auto text-white">
-    <div class="flex flex-col justify-between w-full h-full py-6">
-      <header class="mb-3">
-        <div v-if="player">
-          <div class="flex flex-wrap">
-            <button
-              @click="speedUp()"
-              class="px-6 py-3 ml-6 border border-white"
-            >
-              ⬆
-            </button>
-            <button @click="down()" class="px-6 py-3 ml-6 border border-white">
-              ⬇
-            </button>
-            <button
-              @click="rotateLeft()"
-              class="px-6 py-3 ml-6 border border-white"
-            >
-              ⬅
-            </button>
-            <button
-              @click="rotateRight()"
-              class="px-6 py-3 ml-6 border border-white"
-            >
-              ➡
-            </button>
-            <pre>
-            {{ player.velocity }}
-            </pre>
-          </div>
-        </div>
-      </header>
-      <div id="gameArea" class="w-full aspect-w-16 aspect-h-9"></div>
-      <footer>
-        <button @click="addPlayer" class="px-6 py-3 border border-white">
-          Add Players
-        </button>
-        <button
-          @click="removePlayer"
-          class="px-6 py-3 ml-6 border border-white"
-        >
-          Remove Player
-        </button>
-        <span class="ml-6">Player: {{ players.length }}</span>
-        <button @click="addAsteroid" class="px-6 py-3 border border-white">
-          Add Asteroid
-        </button>
-        <button
-          @click="removeAsteroid"
-          class="px-6 py-3 ml-6 border border-white"
-        >
-          Remove Asteroid
-        </button>
-        <span class="ml-6">Asteroids: {{ asteroids.length }}</span>
-      </footer>
+  <div class="flex text-white">
+    <div class="flex items-center justify-center w-full">
+      <div id="gameArea" class="w-full max-h-screen aspect-w-16 aspect-h-9"></div>
     </div>
+    <footer class="fixed bottom-0 left-0 w-full mb-3">
+      <button @click="addPlayer" class="px-6 py-3 border border-white">
+        Add Players
+      </button>
+      <button @click="removePlayer" class="px-6 py-3 ml-6 border border-white">
+        Remove Player
+      </button>
+      <span class="ml-6">Player: {{ players.length }}</span>
+      <button @click="addAsteroid" class="px-6 py-3 border border-white">
+        Add Asteroid
+      </button>
+      <button
+        @click="removeAsteroid"
+        class="px-6 py-3 ml-6 border border-white"
+      >
+        Remove Asteroid
+      </button>
+      <span class="ml-6">Asteroids: {{ asteroids.length }}</span>
+    </footer>
   </div>
 </template>
 
@@ -234,7 +201,7 @@ export default {
             },
           },
         });
-      }else if (type == 2) {
+      } else if (type == 2) {
         box = this.Bodies.rectangle(x, y, 35, 34, {
           render: {
             sprite: {
@@ -242,7 +209,7 @@ export default {
             },
           },
         });
-      }else if (type == 3) {
+      } else if (type == 3) {
         box = this.Bodies.rectangle(x, y, 53, 49, {
           render: {
             sprite: {
@@ -250,7 +217,7 @@ export default {
             },
           },
         });
-      }else{
+      } else {
         box = this.Bodies.rectangle(x, this.canvas.h / 2, 89, 76, {
           render: {
             sprite: {
