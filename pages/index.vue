@@ -3,6 +3,64 @@
     <div class="flex items-center justify-center w-full">
       <div id="gameArea" class="w-full max-h-screen"></div>
     </div>
+    <footer class="fixed bottom-0 flex justify-between w-full px-4 pb-4 left">
+      <div class="w-32">
+        <div class="flex items-center justify-start w-full h-1/2">
+          <button
+            @mousedown="isTurningLeft = true"
+            @mouseleave="isTurningLeft = false"
+            @mouseup="isTurningLeft = false"
+            @touchstart="isTurningLeft = true"
+            @touchend="isTurningLeft = false"
+            @touchcancel="isTurningLeft = false"
+            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full"
+          >
+            ◀
+          </button>
+        </div>
+        <div class="flex items-center justify-end w-full h-1/2">
+          <button
+            @mousedown="isTurningRight = true"
+            @mouseleave="isTurningRight = false"
+            @mouseup="isTurningRight = false"
+            @touchstart="isTurningRight = true"
+            @touchend="isTurningRight = false"
+            @touchcancel="isTurningRight = false"
+            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full"
+          >
+            ▶
+          </button>
+        </div>
+      </div>
+      <div class="w-32">
+        <div class="flex items-center justify-end w-full h-1/2">
+          <button
+            @mousedown="isMoving = true"
+            @mouseleave="isMoving = false"
+            @mouseup="isMoving = false"
+            @touchstart="isMoving = true"
+            @touchend="isMoving = false"
+            @touchcancel="isMoving = false"
+            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full"
+          >
+            C
+          </button>
+        </div>
+        <div class="flex items-center justify-start w-full h-1/2">
+          <button
+            @mousedown="isMoving = true"
+            @mouseleave="isMoving = false"
+            @mouseup="isMoving = false"
+            @touchstart="isMoving = true"
+            @touchend="isMoving = false"
+            @touchcancel="isMoving = false"
+            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full"
+          >
+            D
+          </button>
+        </div>
+      </div>
+    </footer>
     <footer v-if="isDev" class="fixed bottom-0 left-0 w-full mb-3">
       <button @click="addPlayer" class="px-6 py-3 border border-white">
         Add Players
