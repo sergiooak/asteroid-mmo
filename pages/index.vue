@@ -98,6 +98,7 @@ export default {
       World: Matter.World,
       Bodies: Matter.Bodies,
       Body: Matter.Body,
+      Events: Matter.Events,
 
       engine: null,
       render: null,
@@ -106,6 +107,8 @@ export default {
         w: 1600,
         h: 900,
       },
+
+      worldSize: 10000,
 
       player: null,
       isMoving: false,
@@ -122,6 +125,8 @@ export default {
     this.start();
     window.addEventListener("keydown", this.keyHandlerStart, false);
     window.addEventListener("keyup", this.keyHandlerStop, false);
+
+    this.Events.on(this.render, "afterRender", this.centerCameraOnPlayer)
   },
   methods: {
     start() {
@@ -132,7 +137,7 @@ export default {
         options: {
           width: this.canvas.w,
           height: this.canvas.h,
-          pixelRatio: 1,
+          pixelRatio: '1',
           background: "transparent",
           wireframeBackground: "transparent",
           enabled: true,
@@ -140,31 +145,27 @@ export default {
           showVelocity: true,
           showAngleIndicator: false,
           showCollisions: true,
+          hasBounds: true
         },
       });
 
       this.engine.world.gravity.y = 0;
 
       let walls = [
-        this.Bodies.rectangle(0 - 25, this.canvas.h / 2, 50, this.canvas.h, {
+        // Parede Esquerda
+        this.Bodies.rectangle((this.worldSize / 2) * -1, 0, 50, this.worldSize, {
           friction: 0,
           isStatic: true,
         }),
-        this.Bodies.rectangle(
-          this.canvas.w + 25,
-          this.canvas.h / 2,
-          50,
-          this.canvas.h,
+        // Parede Direita
+        this.Bodies.rectangle(this.worldSize / 2, 0, 50, this.worldSize,
           { friction: 0, isStatic: true }
         ),
-        this.Bodies.rectangle(
-          this.canvas.w / 2,
-          this.canvas.h + 25,
-          this.canvas.w,
-          50,
-          { friction: 0, isStatic: true }
-        ),
-        this.Bodies.rectangle(this.canvas.w / 2, 0 - 25, this.canvas.w, 50, {
+        this.Bodies.rectangle(0, this.worldSize / 2, this.worldSize, 50, {
+          friction: 0,
+          isStatic: true,
+        }),
+        this.Bodies.rectangle(0, (this.worldSize / 2) * -1, this.worldSize, 50, {
           friction: 0,
           isStatic: true,
         }),
@@ -177,13 +178,22 @@ export default {
       this.Engine.run(this.engine);
 
       // run the renderer
-      this.Render.run(this.render);
+      this.Render.run(this.render);   
 
       this.addPlayer(true);
       for (let i = 0; i < 20; i++) {
         this.addAsteroid();
       }
     },
+
+    // =============== CAMERAS =============== \\
+    centerCameraOnPlayer() {
+      if (this.player) {
+        console.log("a");
+        this.Render.lookAt(this.render, this.player, {x: 0, y: (this.canvas.h - 48) / 2})        
+      }      
+    },
+
 
     // =============== CONTROLS =============== \\
     async speedUp() {
@@ -226,7 +236,7 @@ export default {
         const map = (value, x1, y1, x2, y2) =>
           ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
         let x = map(Math.random(), 0, 1, 0 + 20, this.canvas.w - 20);
-        let triangle = this.Bodies.trapezoid(x, this.canvas.h / 2, 34, 48, 1, {
+        let triangle = this.Bodies.trapezoid(0, 0, 34, 48, 1, {
           render: {
             sprite: {
               texture: "/img/player.png",
@@ -257,9 +267,8 @@ export default {
       const map = (value, x1, y1, x2, y2) =>
         ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
       let type = Math.floor(Math.random() * 4) + 1;
-      console.log(type);
-      let x = Math.floor(Math.random() * this.canvas.w) + 1;
-      let y = Math.floor(Math.random() * this.canvas.h) + 1;
+      let x = Math.floor((Math.random() * this.worldSize) + 1) - this.worldSize / 2;
+      let y = Math.floor((Math.random() * this.worldSize) + 1) - this.worldSize / 2;
       let asteroid = null;
       if (type == 1) {
         asteroid = this.Bodies.polygon(x, y, 8, 11, {
