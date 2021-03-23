@@ -1,9 +1,9 @@
 <template>
   <div class="flex text-white">
     <div class="flex items-center justify-center w-full">
-      <div id="gameArea" class="w-full max-h-screen aspect-w-16 aspect-h-9"></div>
+      <div id="gameArea" class="w-full max-h-screen"></div>
     </div>
-    <footer class="fixed bottom-0 left-0 w-full mb-3">
+    <footer v-if="isDev" class="fixed bottom-0 left-0 w-full mb-3">
       <button @click="addPlayer" class="px-6 py-3 border border-white">
         Add Players
       </button>
@@ -33,6 +33,8 @@ export default {
   name: "AsteroidsMMO",
   data() {
     return {
+      isDev: false,
+
       Engine: Matter.Engine,
       Render: Matter.Render,
       World: Matter.World,
@@ -57,6 +59,8 @@ export default {
     };
   },
   mounted() {
+    this.canvas.w = window.innerWidth;
+    this.canvas.h = window.innerHeight;
     this.start();
     window.addEventListener("keydown", this.keyHandlerStart, false);
     window.addEventListener("keyup", this.keyHandlerStop, false);
@@ -85,6 +89,7 @@ export default {
 
       let walls = [
         this.Bodies.rectangle(0 - 25, this.canvas.h / 2, 50, this.canvas.h, {
+          friction: 0,
           isStatic: true,
         }),
         this.Bodies.rectangle(
@@ -92,16 +97,17 @@ export default {
           this.canvas.h / 2,
           50,
           this.canvas.h,
-          { isStatic: true }
+          { friction: 0, isStatic: true }
         ),
         this.Bodies.rectangle(
           this.canvas.w / 2,
           this.canvas.h + 25,
           this.canvas.w,
           50,
-          { isStatic: true }
+          { friction: 0, isStatic: true }
         ),
         this.Bodies.rectangle(this.canvas.w / 2, 0 - 25, this.canvas.w, 50, {
+          friction: 0,
           isStatic: true,
         }),
       ];
@@ -116,6 +122,9 @@ export default {
       this.Render.run(this.render);
 
       this.addPlayer(true);
+      for (let i = 0; i < 20; i++) {
+        this.addAsteroid();
+      }
     },
 
     // =============== CONTROLS =============== \\
@@ -133,7 +142,7 @@ export default {
         if (this.player.angularVelocity > -0.1) {
           this.Body.setAngularVelocity(
             this.player,
-            this.player.angularVelocity - 1 / 75
+            this.player.angularVelocity - 1 / 250
           );
         }
         await wait(1000 / 30);
@@ -144,7 +153,7 @@ export default {
         if (this.player.angularVelocity < 0.1) {
           this.Body.setAngularVelocity(
             this.player,
-            this.player.angularVelocity + 1 / 75
+            this.player.angularVelocity + 1 / 250
           );
         }
         await wait(1000 / 30);
@@ -159,7 +168,7 @@ export default {
         const map = (value, x1, y1, x2, y2) =>
           ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
         let x = map(Math.random(), 0, 1, 0 + 20, this.canvas.w - 20);
-        let box = this.Bodies.rectangle(x, this.canvas.h / 2, 34, 58, {
+        let triangle = this.Bodies.trapezoid(x, this.canvas.h / 2, 34, 48, 1, {
           render: {
             sprite: {
               texture: "/img/player.png",
@@ -167,10 +176,12 @@ export default {
           },
         });
         if (me) {
-          this.player = box;
+          this.player = triangle;
         }
-        this.players.push(box);
-        this.World.add(this.engine.world, box);
+        triangle.friction = 0.05;
+        triangle.mass = 3;
+        this.players.push(triangle);
+        this.World.add(this.engine.world, triangle);
         await wait(50);
         i++;
       }
@@ -191,43 +202,47 @@ export default {
       console.log(type);
       let x = Math.floor(Math.random() * this.canvas.w) + 1;
       let y = Math.floor(Math.random() * this.canvas.h) + 1;
-      let box = null;
-
+      let asteroid = null;
       if (type == 1) {
-        box = this.Bodies.rectangle(x, y, 22, 22, {
+        asteroid = this.Bodies.polygon(x, y, 8, 11, {
           render: {
             sprite: {
               texture: "/img/asteroid-xs.png",
             },
           },
         });
+        asteroid.mass = 1;
       } else if (type == 2) {
-        box = this.Bodies.rectangle(x, y, 35, 34, {
+        asteroid = this.Bodies.polygon(x, y, 8, 17, {
           render: {
             sprite: {
               texture: "/img/asteroid-sm.png",
             },
           },
         });
+        asteroid.mass = 2;
       } else if (type == 3) {
-        box = this.Bodies.rectangle(x, y, 53, 49, {
+        asteroid = this.Bodies.polygon(x, y, 8, 25, {
           render: {
             sprite: {
               texture: "/img/asteroid-md.png",
             },
           },
         });
+        asteroid.mass = 3;
       } else {
-        box = this.Bodies.rectangle(x, this.canvas.h / 2, 89, 76, {
+        asteroid = this.Bodies.polygon(x, y, 8, 41, {
           render: {
             sprite: {
               texture: "/img/asteroid-lg.png",
             },
           },
         });
+        asteroid.mass = 4;
       }
-      this.asteroids.push(box);
-      this.World.add(this.engine.world, box);
+      asteroid.friction = 0.05;
+      this.asteroids.push(asteroid);
+      this.World.add(this.engine.world, asteroid);
     },
     async removeAsteroid() {
       Matter.Composite.remove(
