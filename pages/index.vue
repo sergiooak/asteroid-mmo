@@ -5,29 +5,29 @@
         <div v-if="player">
           <div class="flex flex-wrap">
             <button
-          @click="jump()"
-          class="px-6 py-3 ml-6 border border-white"
-        >
-          Anda
-        </button>
-        <button
-          @click="down()"
-          class="px-6 py-3 ml-6 border border-white"
-        >
-          Ré
-        </button>
-        <button
-          @click="rotateLeft()"
-          class="px-6 py-3 ml-6 border border-white"
-        >
-          Girar para esquerda
-        </button>
-        <button
-          @click="rotateRight()"
-          class="px-6 py-3 ml-6 border border-white"
-        >
-          Girar para direira
-        </button>
+              @click="speedUp()"
+              class="px-6 py-3 ml-6 border border-white"
+            >
+              ⬆
+            </button>
+            <button @click="down()" class="px-6 py-3 ml-6 border border-white">
+              ⬇
+            </button>
+            <button
+              @click="rotateLeft()"
+              class="px-6 py-3 ml-6 border border-white"
+            >
+              ⬅
+            </button>
+            <button
+              @click="rotateRight()"
+              class="px-6 py-3 ml-6 border border-white"
+            >
+              ➡
+            </button>
+            <pre>
+            {{ player.velocity }}
+            </pre>
           </div>
         </div>
       </header>
@@ -43,6 +43,16 @@
           Remove Player
         </button>
         <span class="ml-6">Player: {{ players.length }}</span>
+        <button @click="addAsteroid" class="px-6 py-3 border border-white">
+          Add Asteroid
+        </button>
+        <button
+          @click="removeAsteroid"
+          class="px-6 py-3 ml-6 border border-white"
+        >
+          Remove Asteroid
+        </button>
+        <span class="ml-6">Asteroids: {{ asteroids.length }}</span>
       </footer>
     </div>
   </div>
@@ -71,12 +81,18 @@ export default {
       },
 
       player: null,
+      isMoving: false,
+      isTurningLeft: false,
+      isTurningRight: false,
+
       players: [],
+      asteroids: [],
     };
   },
   mounted() {
     this.start();
-    window.addEventListener("keydown", this.keyHandler, false);
+    window.addEventListener("keydown", this.keyHandlerStart, false);
+    window.addEventListener("keyup", this.keyHandlerStop, false);
   },
   methods: {
     start() {
@@ -135,42 +151,48 @@ export default {
       this.addPlayer(true);
     },
 
-    jump() {
-      this.Body.setVelocity(this.player, {
-        x: Math.cos(this.player.angle - 1.5) * 5,
-        y: Math.sin(this.player.angle - 1.5) * 5,
-      });
-    },
-    down() {
-      this.Body.setVelocity(this.player, {
-        x: Math.cos(this.player.angle - 1.5) * -5,
-        y: Math.sin(this.player.angle - 1.5) * -5,
-      });
-    },
-    rotateLeft() {
-      if (this.player.angularVelocity > -0.1) {
-        this.Body.setAngularVelocity(
-          this.player,
-          this.player.angularVelocity - 0.05
-        );
+    // =============== CONTROLS =============== \\
+    async speedUp() {
+      while (this.isMoving) {
+        this.Body.setVelocity(this.player, {
+          x: this.player.velocity.x + Math.cos(this.player.angle - 1.5) / 3,
+          y: this.player.velocity.y + Math.sin(this.player.angle - 1.5) / 3,
+        });
+        await wait(1000 / 30);
       }
     },
-    rotateRight() {
-      if (this.player.angularVelocity < 0.1) {
-        this.Body.setAngularVelocity(
-          this.player,
-          this.player.angularVelocity + 0.05
-        );
+    async rotateLeft() {
+      while (this.isTurningLeft) {
+        if (this.player.angularVelocity > -0.1) {
+          this.Body.setAngularVelocity(
+            this.player,
+            this.player.angularVelocity - 1 / 75
+          );
+        }
+        await wait(1000 / 30);
+      }
+    },
+    async rotateRight() {
+      while (this.isTurningRight) {
+        if (this.player.angularVelocity < 0.1) {
+          this.Body.setAngularVelocity(
+            this.player,
+            this.player.angularVelocity + 1 / 75
+          );
+        }
+        await wait(1000 / 30);
       }
     },
 
+    // ============== SPAWNNERS ============== \\
+    // Players
     async addPlayer(me) {
       let i = 0;
       while (i < 1) {
         const map = (value, x1, y1, x2, y2) =>
           ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
         let x = map(Math.random(), 0, 1, 0 + 20, this.canvas.w - 20);
-        let box = this.Bodies.rectangle(x, this.canvas.h / 2, 35, 51, {
+        let box = this.Bodies.rectangle(x, this.canvas.h / 2, 34, 58, {
           render: {
             sprite: {
               texture: "/img/player.png",
@@ -186,8 +208,7 @@ export default {
         i++;
       }
     },
-
-    removePlayer() {
+    async removePlayer() {
       Matter.Composite.remove(
         this.engine.world,
         this.players[this.players.length - 1]
@@ -195,22 +216,107 @@ export default {
       this.players.pop();
     },
 
-    // Utils
-    keyHandler(e) {
+    // Asteroids
+    async addAsteroid() {
+      const map = (value, x1, y1, x2, y2) =>
+        ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
+      let type = Math.floor(Math.random() * 4) + 1;
+      console.log(type);
+      let x = Math.floor(Math.random() * this.canvas.w) + 1;
+      let y = Math.floor(Math.random() * this.canvas.h) + 1;
+      let box = null;
+
+      if (type == 1) {
+        box = this.Bodies.rectangle(x, y, 22, 22, {
+          render: {
+            sprite: {
+              texture: "/img/asteroid-xs.png",
+            },
+          },
+        });
+      }else if (type == 2) {
+        box = this.Bodies.rectangle(x, y, 35, 34, {
+          render: {
+            sprite: {
+              texture: "/img/asteroid-sm.png",
+            },
+          },
+        });
+      }else if (type == 3) {
+        box = this.Bodies.rectangle(x, y, 53, 49, {
+          render: {
+            sprite: {
+              texture: "/img/asteroid-md.png",
+            },
+          },
+        });
+      }else{
+        box = this.Bodies.rectangle(x, this.canvas.h / 2, 89, 76, {
+          render: {
+            sprite: {
+              texture: "/img/asteroid-lg.png",
+            },
+          },
+        });
+      }
+      this.asteroids.push(box);
+      this.World.add(this.engine.world, box);
+    },
+    async removeAsteroid() {
+      Matter.Composite.remove(
+        this.engine.world,
+        this.asteroids[this.asteroids.length - 1]
+      );
+      this.asteroids.pop();
+    },
+
+    // ================ UTILS ================ \\
+    keyHandlerStart(e) {
       let code = e.keyCode;
       switch (code) {
         case 37:
-          this.rotateLeft();
+          this.isTurningLeft = true;
           break; //Left key
         case 38:
-          this.jump();
+          this.isMoving = true;
           break; //Up key
         case 39:
-          this.rotateRight();
+          this.isTurningRight = true;
           break; //Right key
-        case 40:
-          this.down();
-          break; //Down key
+      }
+    },
+    keyHandlerStop(e) {
+      let code = e.keyCode;
+      switch (code) {
+        case 37:
+          this.isTurningLeft = false;
+          break; //Left key
+        case 38:
+          this.isMoving = false;
+          break; //Up key
+        case 39:
+          this.isTurningRight = false;
+          break; //Right key
+      }
+    },
+  },
+  watch: {
+    isMoving(newVal, oldVal) {
+      if (newVal == true) {
+        this.speedUp();
+        this.player.render.sprite.texture = "/img/player-moving.png";
+      } else {
+        this.player.render.sprite.texture = "/img/player.png";
+      }
+    },
+    isTurningLeft(newVal, oldVal) {
+      if (newVal == true) {
+        this.rotateLeft();
+      }
+    },
+    isTurningRight(newVal, oldVal) {
+      if (newVal == true) {
+        this.rotateRight();
       }
     },
   },
