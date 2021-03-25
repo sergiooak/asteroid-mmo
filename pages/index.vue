@@ -13,7 +13,7 @@
             @touchstart="isTurningLeft = true"
             @touchend="isTurningLeft = false"
             @touchcancel="isTurningLeft = false"
-            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full"
+            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full select-none"
           >
             ◀
           </button>
@@ -26,7 +26,7 @@
             @touchstart="isTurningRight = true"
             @touchend="isTurningRight = false"
             @touchcancel="isTurningRight = false"
-            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full"
+            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full select-none"
           >
             ▶
           </button>
@@ -41,7 +41,7 @@
             @touchstart="isMoving = true"
             @touchend="isMoving = false"
             @touchcancel="isMoving = false"
-            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full"
+            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full select-none"
           >
             C
           </button>
@@ -54,7 +54,7 @@
             @touchstart="isMoving = true"
             @touchend="isMoving = false"
             @touchcancel="isMoving = false"
-            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full"
+            class="w-16 h-16 text-2xl bg-gray-700 bg-opacity-75 border-2 border-white rounded-full select-none"
           >
             D
           </button>
@@ -181,7 +181,7 @@ export default {
       this.Render.run(this.render);   
 
       this.addPlayer(true);
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 300; i++) {
         this.addAsteroid();
       }
     },
